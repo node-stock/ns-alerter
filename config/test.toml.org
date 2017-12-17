@@ -1,0 +1,4 @@
+### 配置文件
+
+[slack]
+  url = 'https://hooks.slack.com/'
