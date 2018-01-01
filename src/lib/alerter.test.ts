@@ -6,7 +6,7 @@ import { OrderSide } from 'ns-types';
 const testSendSignal = async () => {
   const signal: types.Model.Signal = {
     symbol: 'btc_jpy',
-    price: 2280000,
+    price: '2280000',
     side: types.OrderSide.Buy
   }
   await SlackAlerter.sendSignal(signal);
@@ -14,16 +14,18 @@ const testSendSignal = async () => {
 
 const testSendTrade = async () => {
   const order: types.LimitOrder = {
-    price: 2300,
+    price: '2300',
     symbol: 'btc_jpy',
+    symbolType: types.SymbolType.cryptocoin,
     orderType: types.OrderType.Limit,
     tradeType: types.TradeType.Margin,
     side: types.OrderSide.Buy,
-    amount: 0.001,
-    eventType: types.EventType.Order
+    amount: '0.001',
+    eventType: types.EventType.Order,
+    backtest: "1"
   };
   await SlackAlerter.sendTrade(order);
-  order.price = 2400;
+  order.price = '2400';
   order.side = types.OrderSide.Sell;
   await SlackAlerter.sendTrade(order, 1000);
 }
