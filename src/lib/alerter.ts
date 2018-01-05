@@ -1,6 +1,8 @@
 import * as types from 'ns-types';
 import * as moment from 'moment';
 import * as fetch from 'isomorphic-fetch';
+import { BigNumber } from 'BigNumber.js';
+import { Util } from 'ns-common';
 const config = require('config');
 
 /**
@@ -17,65 +19,123 @@ export class SlackAlerter {
         attachments: [
           {
             color: signal.side === 'buy' ? 'danger' : 'good',
-            title: '商品：' + signal.symbol,
+            title: `【${signal.side === types.OrderSide.Buy ? '买入' : '卖出'}信号】${signal.symbol}`,
             text: signal.notes,
             fields: [
               {
-                title: '价格',
-                value: signal.price + '',
+                title: '时间框架',
+                value: signal.timeframe,
                 short: true
               },
               {
-                title: '方向',
-                value: signal.side === 'buy' ? '买入' : '卖出',
+                title: '价格',
+                value: new BigNumber(String(signal.price)).toFormat(),
                 short: true
               }
             ],
-            footer: '5分钟KDJ   ' + moment().format('YYYY-MM-DD hh:mm:ss'),
-            footer_icon: !signal.symbol.includes('_') ?
-              'https://platform.slack-edge.com/img/default_application_icon.png' : 'https://png.icons8.com/dusk/2x/bitcoin.png'
+            footer: `:${Util.getTradeAssetType(signal.symbol)}: KDJ策略   ${moment().format('YYYY-MM-DD HH:mm:ss')}`
           }
         ]
       })
     };
     return await fetch(config.slack.url, requestOptions);
   }
-  static async sendTrade(order: types.Order, profit?: number) {
+
+  static async sendOrder(order: types.Order) {
     const body = {
       channel: '#coin_trade',
       attachments: [
         {
           color: order.side === types.OrderSide.Buy ? 'danger' : 'good',
-          title: '商品：' + order.symbol,
+          title: `【${order.side === types.OrderSide.Buy ? '买入' : '卖出'}订单】${order.symbol}`,
           fields: [
             {
-              title: '价格',
-              value: order.price + '',
+              title: '账号',
+              value: order.account_id,
               short: true
             },
             {
-              title: '方向',
-              value: order.side === types.OrderSide.Buy ? '买入' : '卖出',
+              title: '交易模式',
+              value: order.backtest === '1' ? '模拟交易' : '正常交易',
+              short: true
+            },
+            {
+              title: '价格',
+              value: new BigNumber(order.price).toFormat(),
               short: true
             },
             {
               title: '数量',
-              value: order.amount + '',
+              value: new BigNumber(order.amount).toFormat(),
               short: true
             }
           ],
-          footer: 'AI自动交易   ' + moment().format('YYYY-MM-DD hh:mm:ss'),
-          footer_icon: 'https://png.icons8.com/dusk/2x/event-accepted.png'
+          footer: `:${Util.getTradeAssetType(order.symbol)}: AI自动交易   ${moment().format('YYYY-MM-DD HH:mm:ss')}`
         }
       ]
     };
-    if (profit) {
-      body.attachments[0].fields.push({
-        title: '盈利',
-        value: profit + '',
-        short: true
-      });
-    }
+
+    const requestOptions = {
+      method: 'POST',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      body: JSON.stringify(body)
+    };
+    return await fetch(config.slack.url, requestOptions);
+  }
+
+  static async sendEarning(earning: types.Earning) {
+    const body = {
+      channel: '#coin_trade',
+      attachments: [
+        {
+          color: 'warning',
+          title: '【平仓收益】：' + earning.symbol,
+          fields: [
+            {
+              title: '账号',
+              value: earning.account_id,
+              short: true
+            },
+            {
+              title: '交易模式',
+              value: earning.backtest === '1' ? '模拟交易' : '正常交易',
+              short: true
+            },
+            {
+              title: '建仓价格',
+              value: new BigNumber(earning.open).toFormat(),
+              short: true
+            },
+            {
+              title: '平仓价格',
+              value: new BigNumber(earning.close).toFormat(),
+              short: true
+            },
+            {
+              title: '数量',
+              value: new BigNumber(earning.quantity).toFormat(),
+              short: true
+            },
+            {
+              title: '手续费',
+              value: new BigNumber(earning.fee).toFormat(),
+              short: true
+            },
+            {
+              title: '收益',
+              value: new BigNumber(earning.profit).toFormat(),
+              short: true
+            },
+            {
+              title: '点差',
+              value: new BigNumber(earning.pips).toFormat(),
+              short: true
+            }
+          ],
+          footer: `:${Util.getTradeAssetType(earning.symbol)}: AI自动交易   ${moment().format('YYYY-MM-DD HH:mm:ss')}`
+        }
+      ]
+    };
 
     const requestOptions = {
       method: 'POST',
