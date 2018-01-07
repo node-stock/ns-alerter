@@ -7,7 +7,18 @@ const testSendSignal = async () => {
   const signal: types.Model.Signal = {
     symbol: 'btc_jpy',
     price: '2280000',
-    side: types.OrderSide.Buy
+    side: types.OrderSide.Buy,
+    timeframe: types.CandlestickUnit.Min5
+  }
+  await SlackAlerter.sendSignal(signal);
+}
+
+const testSendSignal2 = async () => {
+  const signal: types.Model.Signal = {
+    symbol: 'btc_jpy',
+    price: '2280000',
+    side: types.OrderSide.Buy,
+    timeframe: types.CandlestickUnit.Min30
   }
   await SlackAlerter.sendSignal(signal);
 }
@@ -51,6 +62,7 @@ const testSendEarning = async () => {
 
 describe('警报测试', () => {
   it('测试发送信号警报', testSendSignal);
-  it('测试发送下单警报', testSendOrder);
-  it('测试发送收益警报', testSendEarning);
+  it('测试发送信号警报2', testSendSignal2);
+  // it('测试发送下单警报', testSendOrder);
+  // it('测试发送收益警报', testSendEarning);
 });

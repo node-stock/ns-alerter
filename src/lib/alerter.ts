@@ -2,7 +2,7 @@ import * as types from 'ns-types';
 import * as moment from 'moment';
 import * as fetch from 'isomorphic-fetch';
 import { BigNumber } from 'BigNumber.js';
-import { Util } from 'ns-common';
+import { Util, Log } from 'ns-common';
 const config = require('config');
 
 /**
@@ -11,11 +11,22 @@ const config = require('config');
   */
 export class SlackAlerter {
   static async sendSignal(signal: types.Model.Signal) {
+    Log.system.info('发送信号警报[启动]');
+    let channel = '#kdj';
+    // 为数字货币时
+    if (signal.symbol.includes('_')) {
+      if (signal.timeframe === types.CandlestickUnit.Min5) {
+        channel = '#coin';
+      } else {
+        Log.system.info('时间框架：', signal.timeframe);
+        channel = '#coin_vip';
+      }
+    }
     const requestOptions = {
       method: 'POST',
       headers: new Headers({ 'content-type': 'application/json' }),
       body: JSON.stringify({
-        channel: signal.symbol.includes('_') ? '#coin' : '#kdj',
+        channel,
         attachments: [
           {
             color: signal.side === 'buy' ? 'danger' : 'good',
@@ -38,10 +49,12 @@ export class SlackAlerter {
         ]
       })
     };
+    Log.system.info('发送信号警报[终了]');
     return await fetch(config.slack.url, requestOptions);
   }
 
   static async sendOrder(order: types.Order) {
+    Log.system.info('发送订单警报[终了]');
     const body = {
       channel: '#coin_trade',
       attachments: [
@@ -80,10 +93,12 @@ export class SlackAlerter {
       headers: new Headers({ 'content-type': 'application/json' }),
       body: JSON.stringify(body)
     };
+    Log.system.info('发送订单警报[终了]');
     return await fetch(config.slack.url, requestOptions);
   }
 
   static async sendEarning(earning: types.Earning) {
+    Log.system.info('发送收益警报[启动]');
     const body = {
       channel: '#coin_trade',
       attachments: [
@@ -142,6 +157,7 @@ export class SlackAlerter {
       headers: new Headers({ 'content-type': 'application/json' }),
       body: JSON.stringify(body)
     };
+    Log.system.info('发送收益警报[终了]');
     return await fetch(config.slack.url, requestOptions);
   }
 }
