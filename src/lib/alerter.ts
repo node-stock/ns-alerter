@@ -31,7 +31,8 @@ export class SlackAlerter {
           {
             color: signal.side === 'buy' ? 'danger' : 'good',
             title: `【${signal.side === types.OrderSide.Buy ? '买入' : '卖出'}信号】${signal.symbol}`,
-            text: signal.notes,
+            text: `${signal.notes} \`${signal.time}\``,
+            mrkdwn_in: ['text'],
             fields: [
               {
                 title: '时间框架',
@@ -54,13 +55,23 @@ export class SlackAlerter {
   }
 
   static async sendOrder(order: types.Order) {
-    Log.system.info('发送订单警报[终了]');
+    Log.system.info('发送订单警报[启动]');
+    let color = 'danger';
+    let sideText = '买入';
+    if (order.side === types.OrderSide.BuyClose) {
+      color = 'good';
+      sideText = '卖出';
+    }
+    if (order.orderType === types.OrderType.StopLimit) {
+      color = '#CC3399';
+      sideText = '限价止损';
+    }
     const body = {
       channel: '#coin_trade',
       attachments: [
         {
-          color: order.side === types.OrderSide.Buy ? 'danger' : 'good',
-          title: `【${order.side === types.OrderSide.Buy ? '买入' : '卖出'}订单】${order.symbol}`,
+          color: color,
+          title: `【${sideText}订单】${order.symbol}`,
           fields: [
             {
               title: '账号',

@@ -1,6 +1,6 @@
 {
   "name": "ns-alerter",
-  "version": "0.0.7",
+  "version": "0.0.12",
   "description": "node-stock alerter module",
   "repository": {
     "type": "git",
@@ -21,8 +21,8 @@
     "es6-promise": "^4.1.1",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.19.3",
-    "ns-common": "0.0.16",
-    "ns-types": "0.0.57",
+    "ns-common": "0.0.18",
+    "ns-types": "0.0.62",
     "toml": "^2.3.3"
   },
   "devDependencies": {

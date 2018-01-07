@@ -24,7 +24,7 @@ const testSendSignal2 = async () => {
 }
 
 const testSendOrder = async () => {
-  const order: types.LimitOrder = {
+  const order: types.Order = {
     account_id: 'test',
     price: '2300',
     symbol: 'ltc_btc',
